@@ -1,0 +1,126 @@
+---
+title: "Week 7 Assignment"
+author: "Jiaxin Zheng"
+date: "2024-10-19"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+#create the data frame
+data <- data.frame(
+  Category = c("Electronics", "Electronics", "Electronics", "Electronics", 
+               "Home Appliances", "Home Appliances", "Home Appliances", "Home Appliances", 
+               "Clothing", "Clothing", "Clothing", "Clothing", 
+               "Books", "Books", "Books", "Books", 
+               "Sports Equipment", "Sports Equipment"),
+  Item_Name = c("Smartphone", "Smartphone", "Laptop", "Laptop", 
+                "Refrigerator", "Refrigerator", "Washing Machine", "Washing Machine", 
+                "T-Shirt", "T-Shirt", "T-Shirt", "Jeans", 
+                "Fiction Novel", "Fiction Novel", "Non-Fiction Guide", "Non-Fiction Guide", 
+                "Basketball", "Tennis Racket"),
+  Item_ID = c(101, 101, 102, 102, 201, 201, 202, 202, 301, 301, 301, 302, 401, 401, 402, 402, 501, 502),
+  Brand = c("TechBrand", "TechBrand", "CompuBrand", "CompuBrand", 
+            "HomeCool", "HomeCool", "CleanTech", "CleanTech", 
+            "FashionCo", "FashionCo", "FashionCo", "DenimWorks", 
+            "-", "-", "-", "-", 
+            "SportsGear", "RacketPro"),
+  Price = c(699.99, 699.99, 1099.99, 1099.99, 899.99, 899.99, 499.99, 499.99, 
+            19.99, 19.99, 19.99, 49.99, 14.99, 14.99, 24.99, 24.99, 29.99, 89.99),
+  Variation_ID = c("101-A", "101-B", "102-A", "102-B", 
+                   "201-A", "201-B", "202-A", "202-B", 
+                   "301-A", "301-B", "301-C", "302-A", 
+                   "401-A", "401-B", "402-A", "402-B", 
+                   "501-A", "502-A"),
+  Variation_Details = c("Color: Black, Storage: 64GB", "Color: White, Storage: 128GB", 
+                        "Color: Silver, Storage: 256GB", "Color: Space Gray, Storage: 512GB", 
+                        "Color: Stainless Steel, Capacity: 20 cu ft", "Color: White, Capacity: 18 cu ft", 
+                        "Type: Front Load, Capacity: 4.5 cu ft", "Type: Top Load, Capacity: 5.0 cu ft", 
+                        "Color: Blue, Size: S", "Color: Red, Size: M", "Color: Green, Size: L", 
+                        "Color: Dark Blue, Size: 32", 
+                        "Format: Hardcover, Language: English", "Format: Paperback, Language: Spanish", 
+                        "Format: eBook, Language: English", "Format: Paperback, Language: French", 
+                        "Size: Size 7, Color: Orange", "Material: Graphite, Color: Black")
+)
+```
+
+
+```{r}
+library(jsonlite)
+```
+
+```{r}
+json_data <- toJSON(data, pretty = TRUE)
+write(json_data, file = "json_data.json")
+
+# Save the json document to a file
+print(json_data)
+```
+#JSON- * 1.Pros: Easy to read, and use. JSON support most of the modern programming languages.More compact than XML.
+       * 2. Cons: Not optimized for large data, not as efficient when handling large datasets. 
+
+
+```{r First soultion}
+library(knitr)
+html_data <- kable(data, format = "html")
+
+# Save the html document to a file
+write(html_data, file = "html_data.html")
+
+html_data
+```
+#HTML- * 1. Pros: Like JOSON, HTML is easy to read too. Can be interactive with CSS / JavaScript. Designed can be use to displayed in the web browsers.
+       * 2. Cons: HTML don't have complex data type, and not efficient for data storage(not for big data)
+       
+       
+
+```{r Second soultion}
+library("xtable")
+html_data <- data
+print(xtable(html_data), type="html", file="example.html")
+```
+
+```{r}
+library(xml2)
+
+# Create a root node
+xml_root <- xml_new_root("inventory")
+
+# Loop through the data frame and create child nodes for each row
+for (i in 1:nrow(data)) {
+
+  item_node <- xml_add_child(xml_root, "item")
+  
+  xml_add_child(item_node, "Category", data$Category[i])
+  xml_add_child(item_node, "Item_Name", data$Item_Name[i])
+  xml_add_child(item_node, "Item_ID", as.character(data$Item_ID[i]))
+  xml_add_child(item_node, "Brand", data$Brand[i])
+  xml_add_child(item_node, "Price", as.character(data$Price[i]))
+  xml_add_child(item_node, "Variation_ID", data$Variation_ID[i])
+  xml_add_child(item_node, "Variation_Details", data$Variation_Details[i])
+}
+
+# Save the XML document to a file
+write_xml(xml_root, file = "inventory_data_fixed.xml")
+
+print(xml_root)
+```
+
+#XML- * 1. Pros: XML fellows a strict structure, each element has a clear meaning.
+      * 2. Cons: Large file size, and slow parsing. Not for big data.
+       
+
+
+```{r}
+library(arrow)
+
+write_parquet(data, "inventory_data.parquet")
+
+# To read the data back into R
+parquet_data <- read_parquet("inventory_data.parquet")
+
+print(parquet_data)
+```
+#Parquet - * 1. Pros: Good for big data procressing. Fast read time.
+           * 2. Cons: Parquet may be overhead for small datasets, and its more complex, may require additional learning for a new user.
